@@ -6,6 +6,8 @@
 ![GitHub stars](https://img.shields.io/github/stars/rybakisa/solana_nft_crawler?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/rybakisa/solana_nft_crawler?style=social)
 
+![Solana NFT Crawler](https://github.com/rybakisa/solana_nft_crawler/blob/main/assets/logo.png)
+
 App to parse NFT metadata from Solana blockchain.
 
 App starts listening to block production in Solana blockchain from the N-th block and then syncs up to the current block number.
