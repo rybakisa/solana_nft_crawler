@@ -79,6 +79,7 @@ def get_token_metadata(client: Client, mint_key: str) -> str:
     metadata_account = derive_metadata_account(mint_key)
     # TODO: handle HTTP error codes
     # TODO: catch KeyError exceptions
+    # TODO: handle metadata encoding format parameter
     account_info = client.get_account_info(metadata_account)['result'].get('value', None)
     rawdata = account_info['data'][0] if account_info else ''
     return rawdata
