@@ -1,3 +1,5 @@
+"""Helper functions for dealing with Metaplex Metadata"""
+
 import base64
 import struct
 
@@ -7,7 +9,7 @@ import base58
 from settings import METADATA_PROGRAM_ID
 
 
-def derive_metadata_account(mint_key: str):
+def derive_metadata_account(mint_key: str) -> PublicKey:
     """
     Derive metadata account from SPL token mint account
 
@@ -24,14 +26,14 @@ def derive_metadata_account(mint_key: str):
     )[0]
 
 
-def unpack_metadata(data):
+def unpack_metadata(rawdata: str) -> dict:
     """
     Decode Metaplex Metadata
 
-    :param data: encoded metaplex metadata
+    :param rawdata: encoded metaplex metadata
     :return: decoded metaplex metadata
     """
-    data = base64.b64decode(data)
+    data = base64.b64decode(rawdata)
     assert data[0] == 4
     i = 1
     source_account = base58.b58encode(bytes(struct.unpack('<' + "B" * 32, data[i:i + 32])))
