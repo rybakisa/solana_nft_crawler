@@ -31,19 +31,20 @@ def serialize(block_number: int, token_address: str, raw_token_metadata: str) ->
     }
 
 
-def crawl_nfts(start_block: int):
+def crawl_nfts(client, start_block: int):
     """
     Crawling starting point
 
-    :param: start_block int: Block number to crawl from
+    :param client: Solana HTTP API Client object
+    :param start_block: int: Block number to crawl from
     :return: List of JSON objects containing NFT token ids and their metadata
     """
-    client = Client(PROVIDER_URL)
-    blocks = api.get_blocks(start_block)
+    # TODO: catch KeyError exceptions
+    blocks = api.get_blocks(client, start_block)
     print(len(blocks))
 
     for block_number in blocks:
-        block = api.get_block(block_number)
+        block = api.get_block(client, block_number)
 
         for tx in block.get('transactions', []):
             # TODO: do more research on this filter
@@ -64,5 +65,8 @@ def crawl_nfts(start_block: int):
 
 
 if __name__ == '__main__':
-    # TODO: add requirements.txt file
-    crawl_nfts(start_block=START_BLOCK)
+    client = Client(PROVIDER_URL)
+    crawl_nfts(
+        client,
+        START_BLOCK,
+    )
