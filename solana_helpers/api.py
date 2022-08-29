@@ -70,14 +70,15 @@ def get_block(client: Client, number: int) -> dict:
 
 def get_token_metadata(client: Client, mint_key: str) -> str:
     """
-    Get NFT metadata by mint address
+    Get encoded Metaplex Metadata by mint address
 
     :param client: Client: Solana HTTP API Client object
     :param mint_key: SPL token address
-    :return: decoded Metaplex on-chain Metadata
+    :return: encoded Metaplex on-chain Metadata if exists or empty string
     """
     metadata_account = derive_metadata_account(mint_key)
     # TODO: handle HTTP error codes
     # TODO: catch KeyError exceptions
-    rawdata = client.get_account_info(metadata_account)['result']['value']['data'][0]
+    account_info = client.get_account_info(metadata_account)['result'].get('value', None)
+    rawdata = account_info['data'][0] if account_info else ''
     return rawdata

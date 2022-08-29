@@ -18,7 +18,7 @@ def serialize(block_number: int, token_address: str, raw_token_metadata: str) ->
     return {
         'token_id': token_address,
         'block_number': block_number,
-        'content': metaplex.unpack_metadata(raw_token_metadata),
+        'content': metaplex.unpack_metadata(raw_token_metadata) if raw_token_metadata else '',
     }
 
 
