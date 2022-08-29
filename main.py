@@ -1,20 +1,33 @@
-from alchemy import api, metadata
-from settings import START_BLOCK
+from solana.rpc.api import Client
+
+from solana_helpers import api, metaplex
+from settings import START_BLOCK, CANDY_ADDRESSES, PROVIDER_URL
 
 
-def serialize(block_number: int, token_address: str, token_metadata: dict) -> dict:
+def has_mint(tx: dict) -> bool:
+    """
+    Filter function to check if transaction has Candy Machine NFT mints
+
+    :param tx: dict: transaction data
+    :return: boolean representing if transaction has NFT mints
+    """
+    # TODO: write explanation for this one liner
+    return bool(CANDY_ADDRESSES.intersection(set(tx['transaction']['message']['accountKeys'])))
+
+
+def serialize(block_number: int, token_address: str, raw_token_metadata: str) -> dict:
     """
     Serialize crawled data into needed format
 
     :param block_number: int: Solana block number
     :param token_address: str: SPL token address
-    :param token_metadata: dict: decoded Metaplex on-chain Metadata
+    :param raw_token_metadata: str: encoded Metaplex on-chain Metadata
     :return: serialized object
     """
     return {
         'token_id': token_address,
         'block_number': block_number,
-        'content': token_metadata,
+        'content': metaplex.unpack_metadata(raw_token_metadata),
     }
 
 
@@ -25,7 +38,9 @@ def crawl_nfts(start_block: int):
     :param: start_block int: Block number to crawl from
     :return: List of JSON objects containing NFT token ids and their metadata
     """
+    client = Client(PROVIDER_URL)
     blocks = api.get_blocks(start_block)
+    print(len(blocks))
 
     for block_number in blocks:
         block = api.get_block(block_number)
@@ -33,17 +48,17 @@ def crawl_nfts(start_block: int):
         for tx in block.get('transactions', []):
             # TODO: do more research on this filter
             # TODO: filter out unsuccessful transactions
-            if api.has_mint(tx):
+            if has_mint(tx):
                 for token_data in tx['meta'].get('postTokenBalances', []):
                     # TODO: filter only just appeared tokens
                     if token_data['uiTokenAmount']['decimals'] == 0:
-                        token_metadata = metadata.get_metadata(token_data['mint'])
+                        raw_token_metadata = api.get_token_metadata(client, token_data['mint'])
 
                         print(
                             serialize(
                                 block_number,
                                 token_data['mint'],
-                                token_metadata,
+                                raw_token_metadata,
                             )
                         )
 

@@ -2,7 +2,8 @@ from typing import List
 
 import requests
 
-from settings import PROVIDER_URL, PAGE_SIZE, CANDY_ADDRESSES
+from settings import PROVIDER_URL, PAGE_SIZE
+from .metaplex import derive_metadata_account
 
 
 def get_blocks_page(start_block: int) -> List:
@@ -47,7 +48,7 @@ def get_blocks(start_block: int) -> List:
     return blocks + blocks_page
 
 
-def get_block(number: int):
+def get_block(number: int) -> dict:
     """
     Returns identity and transaction information about a confirmed block in the ledger
 
@@ -72,12 +73,14 @@ def get_block(number: int):
     return response.json().get('result', {})
 
 
-def has_mint(tx: dict) -> bool:
+def get_token_metadata(client, mint_key):
     """
-    Filter function to check if transaction has Candy Machine NFT mints
+    Get NFT metadata by mint address
 
-    :param tx: dict: transaction data
-    :return: boolean representing if transaction has NFT mints
+    :param client: Solana HTTP API Client object
+    :param mint_key: SPL token address
+    :return: decoded Metaplex on-chain Metadata
     """
-    # TODO: write explanation for this one liner
-    return bool(CANDY_ADDRESSES.intersection(set(tx['transaction']['message']['accountKeys'])))
+    metadata_account = derive_metadata_account(mint_key)
+    rawdata = client.get_account_info(metadata_account)['result']['value']['data'][0]
+    return rawdata
