@@ -1,18 +1,9 @@
+"""Solana NFT Crawler entry point file with helper functions"""
+
 from solana.rpc.api import Client
 
 from solana_helpers import api, metaplex
-from settings import START_BLOCK, CANDY_ADDRESSES, PROVIDER_URL
-
-
-def has_mint(tx: dict) -> bool:
-    """
-    Filter function to check if transaction has Candy Machine NFT mints
-
-    :param tx: dict: transaction data
-    :return: boolean representing if transaction has NFT mints
-    """
-    # TODO: write explanation for this one liner
-    return bool(CANDY_ADDRESSES.intersection(set(tx['transaction']['message']['accountKeys'])))
+from settings import START_BLOCK, PROVIDER_URL, PROVIDER_TIMEOUT
 
 
 def serialize(block_number: int, token_address: str, raw_token_metadata: str) -> dict:
@@ -31,6 +22,42 @@ def serialize(block_number: int, token_address: str, raw_token_metadata: str) ->
     }
 
 
+def is_nft(token_data: dict) -> bool:
+    """
+    Check if SPL token is an NFT
+
+    :param token_data: dict: token data from transaction
+    :return: bool representing if SPL token is an NFT
+    """
+    return (
+        token_data["uiTokenAmount"]["decimals"] == 0
+        and int(token_data["uiTokenAmount"]["amount"]) == 1
+    )
+
+
+def get_tokens_transfers(tx: dict) -> list:
+    """
+    Get transaction's tokens transfer metadata
+
+    :param tx: dict: Solana transaction object
+    :return: SPL token transfers data from transaction's metadata
+    """
+    # TODO: catch KeyError exceptions
+    pre_token_balances = tx['meta'].get('preTokenBalances', [])
+    post_token_balances = tx['meta'].get('postTokenBalances', [])
+
+    token_transfers = []
+    for post_balance in post_token_balances:
+        # using for-else syntax
+        for pre_balance in pre_token_balances:
+            if pre_balance['mint'] == post_balance['mint']:
+                break
+        else:
+            token_transfers.append(post_balance)
+
+    return token_transfers
+
+
 def crawl_nfts(client: Client, start_block: int) -> None:
     """
     Crawling starting point
@@ -39,33 +66,30 @@ def crawl_nfts(client: Client, start_block: int) -> None:
     :param start_block: int: Block number to crawl from
     :return: List of JSON objects containing NFT token ids and their metadata
     """
-    # TODO: catch KeyError exceptions
     blocks = api.get_blocks(client, start_block)
-    print(len(blocks))
 
     for block_number in blocks:
         block = api.get_block(client, block_number)
 
         for tx in block.get('transactions', []):
-            # TODO: do more research on this filter
             # TODO: filter out unsuccessful transactions
-            if has_mint(tx):
-                for token_data in tx['meta'].get('postTokenBalances', []):
-                    # TODO: filter only just appeared tokens
-                    if token_data['uiTokenAmount']['decimals'] == 0:
-                        raw_token_metadata = api.get_token_metadata(client, token_data['mint'])
-
-                        print(
-                            serialize(
-                                block_number,
-                                token_data['mint'],
-                                raw_token_metadata,
-                            )
-                        )
+            # TODO: filter out transactions unrelated to tokens
+            mints = [item for item in get_tokens_transfers(tx) if is_nft(item)]
+            for mint in mints:
+                print(
+                    serialize(
+                        block_number,
+                        mint['mint'],
+                        api.get_token_metadata(client, mint['mint']),
+                    )
+                )
 
 
 if __name__ == '__main__':
     crawl_nfts(
-        client=Client(PROVIDER_URL),
+        client=Client(
+            endpoint=PROVIDER_URL,
+            timeout=PROVIDER_TIMEOUT,
+        ),
         start_block=START_BLOCK,
     )

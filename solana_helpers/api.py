@@ -1,3 +1,5 @@
+"""Helper functions for dealing with Solana Blockchain JSON RPC API"""
+
 from solana.rpc.api import Client
 
 from settings import PAGE_SIZE
@@ -26,6 +28,7 @@ def get_latest_block_number(client: Client) -> int:
     :param client: Client: Solana HTTP API Client object
     :return: Current timeslot for Solana blockchain
     """
+    # TODO: handle HTTP error codes
     return client.get_slot().get('result', 0)
 
 
@@ -74,5 +77,7 @@ def get_token_metadata(client: Client, mint_key: str) -> str:
     :return: decoded Metaplex on-chain Metadata
     """
     metadata_account = derive_metadata_account(mint_key)
+    # TODO: handle HTTP error codes
+    # TODO: catch KeyError exceptions
     rawdata = client.get_account_info(metadata_account)['result']['value']['data'][0]
     return rawdata
