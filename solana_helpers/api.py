@@ -1,14 +1,14 @@
-from typing import List
+from solana.rpc.api import Client
 
 from settings import PAGE_SIZE
 from .metaplex import derive_metadata_account
 
 
-def get_blocks_page(client, start_block: int, end_block: int) -> List:
+def get_blocks_page(client: Client, start_block: int, end_block: int) -> list[int]:
     """
     Get no more that PAGE_SIZE amount of blocks from blockchain provider API
 
-    :param client: Solana HTTP API Client object
+    :param client: Client: Solana HTTP API Client object
     :param start_block: int: Block number to crawl from
     :param end_block: int: Block number to crawl to
     :return: list of confirmed blocks within a page
@@ -19,45 +19,45 @@ def get_blocks_page(client, start_block: int, end_block: int) -> List:
     return client.get_blocks(start_block, end_block).get('result', [])
 
 
-def get_latest_block_number(client):
+def get_latest_block_number(client: Client) -> int:
     """
     Get current time slot for Solana blockchain
 
-    :param client: Solana HTTP API Client object
+    :param client: Client: Solana HTTP API Client object
     :return: Current timeslot for Solana blockchain
     """
     return client.get_slot().get('result', 0)
 
 
-def get_blocks(client, start_block: int) -> List:
+def get_blocks(client: Client, start_block: int) -> list[int]:
     """
     Get all confirmed blocks considering pagination
 
-    :param client: Solana HTTP API Client object
+    :param client: Client: Solana HTTP API Client object
     :param start_block: int: Block number to crawl from
     :return: List of all confirmed blocks
     """
-    blocks = []
     end_block = get_latest_block_number(client)
 
     assert start_block < end_block
     pages_count = (end_block - start_block) // PAGE_SIZE
 
-    for i in range(pages_count + 1):
-        blocks += get_blocks_page(
+    return [
+        item
+        for i in range(pages_count + 1)
+        for item in get_blocks_page(
             client,
             start_block + PAGE_SIZE * i,
             start_block + PAGE_SIZE * (i + 1),
         )
+    ]
 
-    return blocks
 
-
-def get_block(client, number: int) -> dict:
+def get_block(client: Client, number: int) -> dict:
     """
     Returns identity and transaction information about a confirmed block in the ledger
 
-    :param client: Solana HTTP API Client object
+    :param client: Client: Solana HTTP API Client object
     :param number: int: a slot integer denoting the target block number
     :return: dict containing identity and transaction information about a confirmed block
     """
@@ -65,11 +65,11 @@ def get_block(client, number: int) -> dict:
     return client.get_block(number).get('result', {})
 
 
-def get_token_metadata(client, mint_key):
+def get_token_metadata(client: Client, mint_key: str) -> str:
     """
     Get NFT metadata by mint address
 
-    :param client: Solana HTTP API Client object
+    :param client: Client: Solana HTTP API Client object
     :param mint_key: SPL token address
     :return: decoded Metaplex on-chain Metadata
     """
