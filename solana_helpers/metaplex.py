@@ -54,6 +54,7 @@ def unpack_metadata(rawdata: str) -> dict:
     i += uri_len
     fee = struct.unpack('<h', data[i:i + 2])[0]
     i += 2
+
     has_creator = data[i]
     i += 1
     creators = []
@@ -70,10 +71,12 @@ def unpack_metadata(rawdata: str) -> dict:
             i += 1
             share.append(data[i])
             i += 1
+
     primary_sale_happened = bool(data[i])
     i += 1
     is_mutable = bool(data[i])
-    metadata = {
+
+    return {
         "update_authority": source_account,
         "mint": mint_account,
         "data": {
@@ -81,11 +84,11 @@ def unpack_metadata(rawdata: str) -> dict:
             "symbol": bytes(symbol).decode("utf-8").strip("\x00"),
             "uri": bytes(uri).decode("utf-8").strip("\x00"),
             "seller_fee_basis_points": fee,
-            "creators": creators,
-            "verified": verified,
-            "share": share,
+            "creators": [
+                {'address': a, 'verified': v, 'share': s}
+                for a, v, s in zip(creators, verified, share)
+            ],
         },
         "primary_sale_happened": primary_sale_happened,
         "is_mutable": is_mutable,
     }
-    return metadata
