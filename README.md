@@ -16,12 +16,18 @@ The script catches all NFT mints and print an array of NFT token ids and their m
 The input is the start block number.
 The output is printing all associated with this block NFT token mints and their content.
 
-## Running
-To run crawler you have to:
+## Installation
+### Building
+#### Local
 * Clone this repository:`git clone https://github.com/rybakisa/solana_nft_crawler.git`
-* Build Docker image: `docker build -t solana .`
-* Run crawler: `docker run --rm -t solana:latest <start_block>`
-* * where `<start_block>` is an integer representing the block number to crawl from
+* Build Docker image: `docker build -t solana_nft_crawler .`
+
+#### Using GitHub Packages
+* Pull image: `docker pull ghcr.io/rybakisa/solana_nft_crawler:main`
+
+### Running
+* Run crawler: `docker run --rm -t solana_nft_crawler:latest <start_block>`
+  * where `<start_block>` is an integer representing the block number to crawl from
 
 ## Contributors
 * [@rybakisa](https://github.com/rybakisa) 📖
