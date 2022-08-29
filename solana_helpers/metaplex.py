@@ -4,14 +4,14 @@ import struct
 from solana.publickey import PublicKey
 import base58
 
-from settings import PROVIDER_URL, METADATA_PROGRAM_ID
+from settings import METADATA_PROGRAM_ID
 
 
-def get_metadata_account(mint_key):
+def derive_metadata_account(mint_key: str):
     """
     Derive metadata account from SPL token mint account
 
-    :param mint_key: SPL token mint account
+    :param mint_key: str: SPL token mint account
     :return: metadata account PublicKey object
     """
     return PublicKey.find_program_address(
@@ -31,6 +31,7 @@ def unpack_metadata(data):
     :param data: encoded metaplex metadata
     :return: decoded metaplex metadata
     """
+    data = base64.b64decode(data)
     assert data[0] == 4
     i = 1
     source_account = base58.b58encode(bytes(struct.unpack('<' + "B" * 32, data[i:i + 32])))
@@ -85,22 +86,4 @@ def unpack_metadata(data):
         "primary_sale_happened": primary_sale_happened,
         "is_mutable": is_mutable,
     }
-    return metadata
-
-
-def get_metadata(mint_key):
-    """
-    Get NFT metadata by mint address
-
-    :param mint_key: SPL token address
-    :return: decoded Metaplex on-chain Metadata
-    """
-    from solana.rpc.api import Client
-    client = Client(PROVIDER_URL)
-
-    metadata_account = get_metadata_account(mint_key)
-    data = base64.b64decode(
-        client.get_account_info(metadata_account)['result']['value']['data'][0]
-    )
-    metadata = unpack_metadata(data)
     return metadata
