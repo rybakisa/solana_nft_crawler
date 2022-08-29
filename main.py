@@ -1,6 +1,5 @@
 from alchemy import api, metadata
-
-START_BLOCK = 148065394
+from settings import START_BLOCK
 
 
 def serialize(block_number: int, token_address: str, token_metadata: dict) -> dict:
@@ -33,6 +32,7 @@ def crawl_nfts(start_block: int):
 
         for tx in block.get('transactions', []):
             # TODO: do more research on this filter
+            # TODO: filter out unsuccessful transactions
             if api.has_mint(tx):
                 for token_data in tx['meta'].get('postTokenBalances', []):
                     # TODO: filter only just appeared tokens

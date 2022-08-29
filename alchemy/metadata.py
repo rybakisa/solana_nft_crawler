@@ -4,10 +4,7 @@ import struct
 from solana.publickey import PublicKey
 import base58
 
-from alchemy.api import PROVIDER_URL
-
-
-METADATA_PROGRAM_ID = PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
+from settings import PROVIDER_URL, METADATA_PROGRAM_ID
 
 
 def get_metadata_account(mint_key):
@@ -18,8 +15,12 @@ def get_metadata_account(mint_key):
     :return: metadata account PublicKey object
     """
     return PublicKey.find_program_address(
-        [b'metadata', bytes(METADATA_PROGRAM_ID), bytes(PublicKey(mint_key))],
-        METADATA_PROGRAM_ID
+        [
+            b'metadata',
+            bytes(PublicKey(METADATA_PROGRAM_ID)),
+            bytes(PublicKey(mint_key)),
+        ],
+        PublicKey(METADATA_PROGRAM_ID),
     )[0]
 
 
