@@ -16,6 +16,17 @@ The script catches all NFT mints and print an array of NFT token ids and their m
 The input is the start block number.
 The output is printing all associated with this block NFT token mints and their content.
 
+## Projects structure
+
+Project consists of the following parts:
+* `main.py`: an entry point for the crawler,
+* `crawler.py`: functions responsible for fetched data processing,
+* `solana_helpers` module:
+   * `api.py`: wrappers for Solana RPC API,
+   * `metaplex.py`: functions to deal with the Metaplex standart related matters,
+* `settings.py`: project settings.
+
+
 ## Installation & Running
 ### From GitHub Packages
 * Run: `docker run -t ghcr.io/rybakisa/solana_nft_crawler:main <start_block>`
