@@ -11,7 +11,10 @@ from settings import METADATA_PROGRAM_ID
 
 def derive_metadata_account(mint_key: str) -> PublicKey:
     """
-    Derive metadata account from SPL token mint account
+    Derive metadata account from SPL token mint account.
+
+    Token Metadata program offers a Metadata Account that attaches itself to a Mint Account via a PDA.
+    Detailed explanation: https://docs.metaplex.com/programs/token-metadata/overview#introduction
 
     :param mint_key: str: SPL token mint account
     :return: metadata account PublicKey object
@@ -28,7 +31,10 @@ def derive_metadata_account(mint_key: str) -> PublicKey:
 
 def unpack_metadata(rawdata: str) -> dict:
     """
-    Decode Metaplex Metadata
+    Decode Metaplex Metadata.
+
+    Slightly altered implementation from abandoned https://github.com/metaplex-foundation/python-api
+    Original method: https://github.com/metaplex-foundation/python-api/blob/main/metaplex/metadata.py#L123
 
     :param rawdata: encoded metaplex metadata
     :return: decoded metaplex metadata

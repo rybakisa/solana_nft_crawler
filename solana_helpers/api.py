@@ -8,11 +8,11 @@ from .metaplex import derive_metadata_account
 
 def get_blocks_page(client: Client, start_block: int, end_block: int) -> list[int]:
     """
-    Get no more that PAGE_SIZE amount of blocks from blockchain provider API
+    Get no more that PAGE_SIZE amount of blocks from blockchain provider API.
 
     :param client: Client: Solana HTTP API Client object
-    :param start_block: int: Block number to crawl from
-    :param end_block: int: Block number to crawl to
+    :param start_block: int: block number to crawl from
+    :param end_block: int: block number to crawl to
     :return: list of confirmed blocks within a page
     """
     assert start_block < end_block
@@ -23,7 +23,7 @@ def get_blocks_page(client: Client, start_block: int, end_block: int) -> list[in
 
 def get_latest_block_number(client: Client) -> int:
     """
-    Get current time slot for Solana blockchain
+    Get current time slot from Solana blockchain.
 
     :param client: Client: Solana HTTP API Client object
     :return: Current timeslot for Solana blockchain
@@ -34,7 +34,12 @@ def get_latest_block_number(client: Client) -> int:
 
 def get_blocks(client: Client, start_block: int) -> list[int]:
     """
-    Get all confirmed blocks considering pagination
+    Get all confirmed blocks considering pagination.
+
+    Solana API get_blocks call has limit of 500 000 blocks.
+    This method implement pagination to handle requests with bigger amount of blocks to parse.
+    Also PAGE_SIZE setting is used to customize blocks limit per call to avoid HTTP Timeouts
+    for requests with large number of blocks.
 
     :param client: Client: Solana HTTP API Client object
     :param start_block: int: Block number to crawl from
@@ -58,7 +63,7 @@ def get_blocks(client: Client, start_block: int) -> list[int]:
 
 def get_block(client: Client, number: int) -> dict:
     """
-    Returns identity and transaction information about a confirmed block in the ledger
+    Returns identity and transaction information about a confirmed block in the ledger.
 
     :param client: Client: Solana HTTP API Client object
     :param number: int: a slot integer denoting the target block number
@@ -70,7 +75,7 @@ def get_block(client: Client, number: int) -> dict:
 
 def get_token_metadata(client: Client, mint_key: str) -> str:
     """
-    Get encoded Metaplex Metadata by mint address
+    Get encoded Metaplex Metadata by mint address.
 
     :param client: Client: Solana HTTP API Client object
     :param mint_key: SPL token address

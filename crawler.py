@@ -7,12 +7,12 @@ from solana_helpers import api, metaplex
 
 def serialize(block_number: int, token_address: str, raw_token_metadata: str) -> dict:
     """
-    Serialize crawled data into needed format
+    Serialize crawled data into a needed format.
 
     :param block_number: int: Solana block number
     :param token_address: str: SPL token address
     :param raw_token_metadata: str: encoded Metaplex on-chain Metadata
-    :return: serialized object
+    :return: serialized NFT metadata
     """
     return {
         'token_id': token_address,
@@ -21,9 +21,12 @@ def serialize(block_number: int, token_address: str, raw_token_metadata: str) ->
     }
 
 
-def is_nft(token_data: dict) -> bool:
+def is_nft_mint(token_data: dict) -> bool:
     """
-    Check if SPL token is an NFT
+    Check if SPL token transfer is an NFT mint.
+
+    According to standard NFT must have decimals equal to 0.
+    Also checking that token amount after transfer equal 1.
 
     :param token_data: dict: token data from transaction
     :return: bool representing if SPL token is an NFT
@@ -36,7 +39,10 @@ def is_nft(token_data: dict) -> bool:
 
 def get_created_tokens(tx: dict) -> list:
     """
-    Get tokens created during the transaction
+    Get tokens created during the transaction.
+
+    Comparing token balances before and after the transaction
+    to found tokens with no balance before and some balance after.
 
     :param tx: dict: Solana transaction object
     :return: SPL token created during the transaction
@@ -59,11 +65,12 @@ def get_created_tokens(tx: dict) -> list:
 
 def run_crawler(client: Client, start_block: int) -> None:
     """
-    Crawling starting point
+    Crawling starting point.
+
+    Fetching blocks, processing blocks and their transactions.
 
     :param client: Client: Solana HTTP API Client object
-    :param start_block: int: Block number to crawl from
-    :return: List of JSON objects containing NFT token ids and their metadata
+    :param start_block: int: block number to crawl from
     """
     blocks = api.get_blocks(client, start_block)
 
@@ -75,7 +82,7 @@ def run_crawler(client: Client, start_block: int) -> None:
         for tx in block.get('transactions', []):
             # TODO: filter out unsuccessful transactions
             # TODO: filter out transactions unrelated to tokens
-            mints = [item for item in get_created_tokens(tx) if is_nft(item)]
+            mints = [item for item in get_created_tokens(tx) if is_nft_mint(item)]
             for mint in mints:
                 block_mints_output.append(
                     serialize(
